@@ -1,170 +1,128 @@
 # MCP Video Recognition Server
 
-An MCP (Model Context Protocol) server that provides tools for image, audio, and video recognition using Google's Gemini AI.
+An MCP (Model Context Protocol) server that provides AI-powered media recognition using Google's Gemini AI. Enhanced with MongoDB integration for storing media files and analysis results, plus support for downloading media from URLs.
 
 <a href="https://glama.ai/mcp/servers/@mario-andreschak/mcp_video_recognition">
   <img width="380" height="200" src="https://glama.ai/mcp/servers/@mario-andreschak/mcp_video_recognition/badge" alt="Video Recognition Server MCP server" />
 </a>
 
-## Features
+## 🚀 Features
 
 - **Image Recognition**: Analyze and describe images using Google Gemini AI
-- **Audio Recognition**: Analyze and transcribe audio using Google Gemini AI
+- **Audio Recognition**: Analyze and transcribe audio using Google Gemini AI  
 - **Video Recognition**: Analyze and describe videos using Google Gemini AI
+- **URL Support**: Download and analyze media directly from URLs
+- **MongoDB Integration**: Store downloaded media and analysis results
+- **Automatic Caching**: Skip redundant processing with intelligent caching
 
-## Prerequisites
+## 📋 Prerequisites
 
 - Node.js 18 or higher
-- Google Gemini API key
+- Google Gemini API key ([Get one here](https://makersuite.google.com/app/apikey))
+- MongoDB database (MongoDB Atlas or self-hosted)
 
-## Installation
-
-### Manual Installation
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/yourusername/mcp-video-recognition.git
-   cd mcp-video-recognition
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Build the project:
-   ```bash
-   npm run build
-   ```
-
-### Installing in [FLUJO](https://github.com/mario-andreschak/FLUJO/)
-
-1. Click Add Server
-2. Copy & Paste Github URL into FLUJO
-3. Click Parse, Clone, Install, Build and Save.
-
-### Installing via Configuration Files
-
-To integrate this MCP server with Cline or other MCP clients via configuration files:
-
-1. Open your Cline settings:
-   - In VS Code, go to File -> Preferences -> Settings
-   - Search for "Cline MCP Settings"
-   - Click "Edit in settings.json"
-
-2. Add the server configuration to the `mcpServers` object:
-   ```json
-   {
-     "mcpServers": {
-       "video-recognition": {
-         "command": "node",
-         "args": [
-           "/path/to/mcp-video-recognition/dist/index.js"
-         ],
-         "disabled": false,
-         "autoApprove": []
-       }
-     }
-   }
-   ```
-
-3. Replace `/path/to/mcp-video-recognition/dist/index.js` with the actual path to the `index.js` file in your project directory. Use forward slashes (/) or double backslashes (\\\\) for the path on Windows.
-
-4. Save the settings file. Cline should automatically connect to the server.
-
-## Configuration
-
-The server is configured using environment variables:
-
-- `GOOGLE_API_KEY` (required): Your Google Gemini API key
-- `TRANSPORT_TYPE`: Transport type to use (`stdio` or `sse`, defaults to `stdio`)
-- `PORT`: Port number for SSE transport (defaults to 3000)
-- `LOG_LEVEL`: Logging level (`verbose`, `debug`, `info`, `warn`, `error`, defaults to `info`)
-
-## Usage
-
-### Starting the Server
-
-#### With stdio Transport (Default)
+## 🛠️ Quick Start
 
 ```bash
-GOOGLE_API_KEY=your_api_key npm start
+# Clone the repository
+git clone https://github.com/yourusername/mcp_video_recognition.git
+cd mcp_video_recognition
+
+# Install dependencies
+npm install
+
+# Setup environment
+cp .env.example .env
+# Edit .env with your credentials
+
+# Build and start
+npm run build
+npm start
 ```
 
-#### With SSE Transport
+## 📚 Documentation
 
-```bash
-GOOGLE_API_KEY=your_api_key TRANSPORT_TYPE=sse PORT=3000 npm start
+- [Deployment Guide](./DEPLOYMENT.md) - Detailed deployment instructions
+- [Supermachine Setup](./SUPERMACHINE_SETUP.md) - Supermachine-specific installation
+- [MongoDB Examples](./examples/mongodb-examples.md) - Database query examples
+
+## 🔧 Configuration
+
+Create a `.env` file with:
+```env
+GOOGLE_API_KEY=your_gemini_api_key
+MONGODB_URI=your_mongodb_connection_string
 ```
 
-### Using the Tools
+See [.env.example](./.env.example) for all options.
 
-The server provides three tools that can be called by MCP clients:
+## 🎯 Usage
 
-#### Image Recognition
-
+### Image Recognition
 ```json
 {
   "name": "image_recognition",
   "arguments": {
-    "filepath": "/path/to/image.jpg",
-    "prompt": "Describe this image in detail",
-    "modelname": "gemini-2.0-flash"
+    "url": "https://example.com/image.jpg",
+    "prompt": "Describe this image"
   }
 }
 ```
 
-#### Audio Recognition
-
-```json
-{
-  "name": "audio_recognition",
-  "arguments": {
-    "filepath": "/path/to/audio.mp3",
-    "prompt": "Transcribe this audio",
-    "modelname": "gemini-2.0-flash"
-  }
-}
-```
-
-#### Video Recognition
-
+### Video Recognition
 ```json
 {
   "name": "video_recognition",
   "arguments": {
-    "filepath": "/path/to/video.mp4",
-    "prompt": "Describe what happens in this video",
-    "modelname": "gemini-2.0-flash"
+    "url": "https://example.com/video.mp4",
+    "prompt": "What happens in this video?"
   }
 }
 ```
 
 ### Tool Parameters
 
-All tools accept the following parameters:
+- `filepath` or `url` (required): Local file path OR URL to media
+- `prompt` (optional): Custom analysis prompt
+- `modelname` (optional): Gemini model (default: "gemini-2.0-flash")
+- `saveToDb` (optional): Save to MongoDB (default: true)
 
-- `filepath` (required): Path to the media file to analyze
-- `prompt` (optional): Custom prompt for the recognition (defaults to "Describe this content")
-- `modelname` (optional): Gemini model to use for recognition (defaults to "gemini-2.0-flash")
+## 🗄️ MongoDB Features
 
-## Development
+- **Automatic Caching**: Reuse previous analysis results
+- **Binary Storage**: Store media files in database
+- **Metadata Tracking**: Save prompts, models, and timestamps
+- **Search Capability**: Full-text search on analysis results
 
-### Running in Development Mode
+## 📁 Project Structure
 
-```bash
-GOOGLE_API_KEY=your_api_key npm run dev
+```
+src/
+├── index.ts        # Entry point
+├── server.ts       # MCP server implementation
+├── tools/          # Recognition tools
+├── services/       # Core services
+│   ├── gemini.ts   # Gemini AI integration
+│   ├── mongodb.ts  # Database operations
+│   └── media-downloader.ts # URL downloads
+├── types/          # TypeScript definitions
+└── utils/          # Utilities
 ```
 
-### Project Structure
+## 🤝 Contributing
 
-- `src/index.ts`: Entry point
-- `src/server.ts`: MCP server implementation
-- `src/tools/`: Tool implementations
-- `src/services/`: Service implementations (Gemini API)
-- `src/types/`: Type definitions
-- `src/utils/`: Utility functions
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Open a pull request
 
-## License
+## 📄 License
 
-MIT
+MIT License - see [LICENSE](./LICENSE) file for details.
+
+## 🆘 Support
+
+- **Issues**: [GitHub Issues](https://github.com/yourusername/mcp_video_recognition/issues)
+- **Documentation**: See documentation files in this repository
+- **MCP Protocol**: [modelcontextprotocol.io](https://modelcontextprotocol.io/)

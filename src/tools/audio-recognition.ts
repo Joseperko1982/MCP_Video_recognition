@@ -5,6 +5,8 @@
 import { z } from 'zod';
 import { createLogger } from '../utils/logger.js';
 import { GeminiService } from '../services/gemini.js';
+import { MongoDBService } from '../services/mongodb.js';
+import { MediaDownloaderService } from '../services/media-downloader.js';
 import { AudioRecognitionParamsSchema } from '../types/index.js';
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import type { AudioRecognitionParams } from '../types/index.js';
@@ -13,34 +15,94 @@ import * as path from 'node:path';
 
 const log = createLogger('AudioRecognitionTool');
 
-export const createAudioRecognitionTool = (geminiService: GeminiService) => {
+export const createAudioRecognitionTool = (
+  geminiService: GeminiService,
+  mongodbService: MongoDBService,
+  mediaDownloaderService: MediaDownloaderService
+) => {
   return {
     name: 'audio_recognition',
-    description: 'Analyze and transcribe audio using Google Gemini AI',
+    description: 'Analyze and transcribe audio from file path or URL using Google Gemini AI',
     inputSchema: AudioRecognitionParamsSchema,
     callback: async (args: AudioRecognitionParams): Promise<CallToolResult> => {
+      let tempFilePath: string | null = null;
+      
       try {
-        log.info(`Processing audio recognition request for file: ${args.filepath}`);
+        log.info(`Processing audio recognition request: ${args.filepath || args.url}`);
         log.verbose('Audio recognition request', JSON.stringify(args));
         
-        // Verify file exists
-        if (!fs.existsSync(args.filepath)) {
-          throw new Error(`Audio file not found: ${args.filepath}`);
-        }
+        let filepath: string;
+        let fileData: Buffer;
+        let mimeType: string;
+        let filename: string;
+        let sourceUrl: string | undefined;
         
-        // Verify file is an audio
-        const ext = path.extname(args.filepath).toLowerCase();
-        if (!['.mp3', '.wav', '.ogg'].includes(ext)) {
-          throw new Error(`Unsupported audio format: ${ext}. Supported formats are: .mp3, .wav, .ogg`);
+        // Handle URL input
+        if (args.url) {
+          log.info(`Downloading audio from URL: ${args.url}`);
+          
+          // Check if we already have this media in the database
+          if (args.saveToDb) {
+            const existingMedia = await mongodbService.findByUrl(args.url);
+            if (existingMedia && existingMedia.analysis) {
+              log.info('Found existing analysis in database, returning cached result');
+              return {
+                content: [
+                  {
+                    type: 'text',
+                    text: existingMedia.analysis.result
+                  }
+                ]
+              };
+            }
+          }
+          
+          // Download the media
+          const downloadResult = await mediaDownloaderService.downloadMedia(args.url);
+          filepath = downloadResult.filepath;
+          fileData = downloadResult.fileData;
+          mimeType = downloadResult.mimeType;
+          filename = downloadResult.filename;
+          sourceUrl = args.url;
+          tempFilePath = filepath; // Mark for cleanup
+          
+          // Verify it's audio
+          if (!mimeType.startsWith('audio/') && !mimeType.startsWith('video/')) {
+            throw new Error(`URL does not point to an audio file. MIME type: ${mimeType}`);
+          }
+        } 
+        // Handle file path input
+        else if (args.filepath) {
+          filepath = args.filepath;
+          
+          // Verify file exists
+          if (!fs.existsSync(filepath)) {
+            throw new Error(`Audio file not found: ${filepath}`);
+          }
+          
+          // Verify file is an audio
+          const ext = path.extname(filepath).toLowerCase();
+          if (!['.mp3', '.wav', '.ogg'].includes(ext)) {
+            throw new Error(`Unsupported audio format: ${ext}. Supported formats are: .mp3, .wav, .ogg`);
+          }
+          
+          // Read file data if we need to save to DB
+          if (args.saveToDb) {
+            fileData = fs.readFileSync(filepath);
+            filename = path.basename(filepath);
+            mimeType = `audio/${ext.substring(1)}`; // Simple MIME type inference
+          }
+        } else {
+          throw new Error('Either filepath or url must be provided');
         }
         
         // Default prompt if not provided
         const prompt = args.prompt || 'Describe this audio';
-        const modelName = args.modelname || 'gemini-2.0-flash';
+        const modelName = args.modelname || 'gemini-2.5-flash';
         
         // Upload the file
         log.info('Uploading audio file...');
-        const file = await geminiService.uploadFile(args.filepath);
+        const file = await geminiService.uploadFile(filepath);
         
         // Process with Gemini
         log.info('Generating content from audio...');
@@ -57,6 +119,46 @@ export const createAudioRecognitionTool = (geminiService: GeminiService) => {
             ],
             isError: true
           };
+        }
+        
+        // Save to MongoDB if requested
+        if (args.saveToDb && (fileData! || sourceUrl)) {
+          try {
+            log.info('Saving audio and analysis to MongoDB...');
+            
+            if (sourceUrl) {
+              // For URL sources, save with the analysis
+              await mongodbService.saveMedia(
+                sourceUrl,
+                filename!,
+                mimeType!,
+                fileData!,
+                {
+                  prompt,
+                  result: result.text,
+                  model: modelName
+                }
+              );
+            } else if (fileData!) {
+              // For file sources, also save with analysis
+              await mongodbService.saveMedia(
+                filepath,
+                filename!,
+                mimeType!,
+                fileData!,
+                {
+                  prompt,
+                  result: result.text,
+                  model: modelName
+                }
+              );
+            }
+            
+            log.info('Audio and analysis saved to MongoDB successfully');
+          } catch (dbError) {
+            log.error('Failed to save to MongoDB', dbError);
+            // Don't fail the entire operation if DB save fails
+          }
         }
         
         log.info('Audio recognition completed successfully');
@@ -83,6 +185,11 @@ export const createAudioRecognitionTool = (geminiService: GeminiService) => {
           ],
           isError: true
         };
+      } finally {
+        // Cleanup temp file if we downloaded it
+        if (tempFilePath) {
+          mediaDownloaderService.cleanupTempFile(tempFilePath);
+        }
       }
     }
   };

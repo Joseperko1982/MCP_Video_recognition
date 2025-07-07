@@ -9,10 +9,13 @@ import { randomUUID } from 'crypto';
 import type { Request, Response } from 'express';
 import { createLogger } from './utils/logger.js';
 import { GeminiService } from './services/gemini.js';
+import { MongoDBService } from './services/mongodb.js';
+import { MediaDownloaderService } from './services/media-downloader.js';
 import { createImageRecognitionTool } from './tools/image-recognition.js';
 import { createAudioRecognitionTool } from './tools/audio-recognition.js';
 import { createVideoRecognitionTool } from './tools/video-recognition.js';
 import type { GeminiConfig } from './types/index.js';
+import { BaseRecognitionParamsSchema } from './types/index.js';
 
 const log = createLogger('Server');
 
@@ -20,18 +23,26 @@ export interface ServerConfig {
   gemini: GeminiConfig;
   transport: 'stdio' | 'sse';
   port?: number;
+  mongodb: {
+    uri: string;
+    dbName: string;
+  };
 }
 
 export class Server {
   private readonly mcpServer: McpServer;
   private readonly geminiService: GeminiService;
+  private readonly mongodbService: MongoDBService;
+  private readonly mediaDownloaderService: MediaDownloaderService;
   private readonly config: ServerConfig;
 
   constructor(config: ServerConfig) {
     this.config = config;
     
-    // Initialize Gemini service
+    // Initialize services
     this.geminiService = new GeminiService(config.gemini);
+    this.mongodbService = new MongoDBService(config.mongodb.uri, config.mongodb.dbName);
+    this.mediaDownloaderService = new MediaDownloaderService();
     
     // Create MCP server
     this.mcpServer = new McpServer({
@@ -49,30 +60,42 @@ export class Server {
    * Register all tools with the MCP server
    */
   private registerTools(): void {
-    // Create tools
-    const imageRecognitionTool = createImageRecognitionTool(this.geminiService);
-    const audioRecognitionTool = createAudioRecognitionTool(this.geminiService);
-    const videoRecognitionTool = createVideoRecognitionTool(this.geminiService);
+    // Create tools with all necessary services
+    const imageRecognitionTool = createImageRecognitionTool(
+      this.geminiService,
+      this.mongodbService,
+      this.mediaDownloaderService
+    );
+    const audioRecognitionTool = createAudioRecognitionTool(
+      this.geminiService,
+      this.mongodbService,
+      this.mediaDownloaderService
+    );
+    const videoRecognitionTool = createVideoRecognitionTool(
+      this.geminiService,
+      this.mongodbService,
+      this.mediaDownloaderService
+    );
     
     // Register tools with MCP server
     this.mcpServer.tool(
       imageRecognitionTool.name,
       imageRecognitionTool.description,
-      imageRecognitionTool.inputSchema.shape,
+      BaseRecognitionParamsSchema.shape,
       imageRecognitionTool.callback
     );
     
     this.mcpServer.tool(
       audioRecognitionTool.name,
       audioRecognitionTool.description,
-      audioRecognitionTool.inputSchema.shape,
+      BaseRecognitionParamsSchema.shape,
       audioRecognitionTool.callback
     );
     
     this.mcpServer.tool(
       videoRecognitionTool.name,
       videoRecognitionTool.description,
-      videoRecognitionTool.inputSchema.shape,
+      BaseRecognitionParamsSchema.shape,
       videoRecognitionTool.callback
     );
     
@@ -84,6 +107,11 @@ export class Server {
    */
   async start(): Promise<void> {
     try {
+      // Connect to MongoDB
+      log.info('Connecting to MongoDB...');
+      await this.mongodbService.connect();
+      log.info('MongoDB connected successfully');
+      
       if (this.config.transport === 'stdio') {
         await this.startWithStdio();
       } else if (this.config.transport === 'sse') {
@@ -235,6 +263,13 @@ export class Server {
   async stop(): Promise<void> {
     try {
       await this.mcpServer.close();
+      
+      // Disconnect from MongoDB
+      await this.mongodbService.disconnect();
+      
+      // Cleanup temp files
+      this.mediaDownloaderService.cleanupAllTempFiles();
+      
       log.info('Server stopped');
     } catch (error) {
       log.error('Error stopping server', error);

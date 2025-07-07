@@ -2,6 +2,7 @@
  * Entry point for the MCP video recognition server
  */
 
+import 'dotenv/config';
 import { Server } from './server.js';
 import { createLogger, LogLevel, Logger } from './utils/logger.js';
 import type { ServerConfig } from './server.js';
@@ -29,13 +30,32 @@ function loadConfig(): ServerConfig {
   const portStr = process.env.PORT;
   const port = portStr ? parseInt(portStr, 10) : undefined;
   
-  return {
+  // MongoDB configuration (optional)
+  const mongoUri = process.env.MONGODB_URI;
+  
+  const config: any = {
     gemini: {
       apiKey
     },
     transport: transportType,
     port
   };
+  
+  if (mongoUri) {
+    config.mongodb = {
+      uri: mongoUri,
+      dbName: process.env.MONGODB_DB_NAME || 'Joeexexassitant'
+    };
+  } else {
+    log.warn('MONGODB_URI not provided, running without database features');
+    // Use a dummy MongoDB config to prevent errors
+    config.mongodb = {
+      uri: 'mongodb://localhost:27017',
+      dbName: 'Joeexexassitant'
+    };
+  }
+  
+  return config;
 }
 
 /**
