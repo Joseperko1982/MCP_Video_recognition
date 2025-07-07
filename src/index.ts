@@ -23,39 +23,30 @@ function loadConfig(): ServerConfig {
     throw new Error('GOOGLE_API_KEY environment variable is required');
   }
 
-  // Determine transport type (defaults to SSE)
-  const transportType = process.env.TRANSPORT_TYPE === 'stdio' ? 'stdio' : 'sse';
+  // Determine transport type
+  const transportType = process.env.TRANSPORT_TYPE === 'sse' ? 'sse' : 'stdio';
   
   // Parse port if provided
   const portStr = process.env.PORT;
   const port = portStr ? parseInt(portStr, 10) : undefined;
   
-  // MongoDB configuration (optional)
+  // MongoDB configuration
   const mongoUri = process.env.MONGODB_URI;
+  if (!mongoUri) {
+    throw new Error('MONGODB_URI environment variable is required');
+  }
   
-  const config: any = {
+  return {
     gemini: {
       apiKey
     },
     transport: transportType,
-    port
-  };
-  
-  if (mongoUri) {
-    config.mongodb = {
+    port,
+    mongodb: {
       uri: mongoUri,
-      dbName: process.env.MONGODB_DB_NAME || 'Joeexexassitant'
-    };
-  } else {
-    log.warn('MONGODB_URI not provided, running without database features');
-    // Use a dummy MongoDB config to prevent errors
-    config.mongodb = {
-      uri: 'mongodb://localhost:27017',
-      dbName: 'Joeexexassitant'
-    };
-  }
-  
-  return config;
+      dbName: process.env.MONGODB_DB_NAME || 'video_analysis'
+    }
+  };
 }
 
 /**

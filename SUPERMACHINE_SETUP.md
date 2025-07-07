@@ -2,12 +2,6 @@
 
 This guide provides step-by-step instructions for installing the MCP Video Recognition server on Supermachine.
 
-## Transport Support
-
-This MCP server supports **BOTH** transport modes:
-✅ **SSE Transport** (Default - Server-Sent Events over HTTP)  
-✅ **STDIO Transport** (Alternative mode)
-
 ## Prerequisites
 
 Before installation, you need:
@@ -31,23 +25,13 @@ Before installation, you need:
 
 In the Supermachine dashboard, add the following environment variables:
 
-#### Required Variables
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `GOOGLE_API_KEY` | Your Google Gemini API key | `AIzaSy...` |
-| `MONGODB_URI` | MongoDB connection string | `mongodb+srv://user:pass@cluster.mongodb.net/` |
-
-#### Transport Configuration
-| Variable | Description | Default | Options |
-|----------|-------------|---------|---------|
-| `TRANSPORT_TYPE` | Transport mode | `sse` | `stdio` or `sse` |
-| `PORT` | Port for SSE mode | `3000` | Any available port |
-
-#### Optional Variables
-| Variable | Description | Default | Example |
-|----------|-------------|---------|---------|
-| `MONGODB_DB_NAME` | Database name | `video_analysis` | `my_video_db` |
-| `LOG_LEVEL` | Logging verbosity | `info` | `debug`, `error` |
+| Variable | Required | Description | Example |
+|----------|----------|-------------|---------|
+| `GOOGLE_API_KEY` | Yes | Your Google Gemini API key | `AIzaSy...` |
+| `MONGODB_URI` | Yes | MongoDB connection string | `mongodb+srv://user:pass@cluster.mongodb.net/` |
+| `MONGODB_DB_NAME` | No | Database name (default: video_analysis) | `my_video_db` |
+| `TRANSPORT_TYPE` | No | Transport type (default: stdio) | `stdio` or `sse` |
+| `LOG_LEVEL` | No | Logging level (default: info) | `info`, `debug`, `error` |
 
 ### 3. Build Configuration
 
@@ -59,67 +43,24 @@ npm run build
 
 Supermachine should automatically run these commands during installation.
 
-### 4. Start Commands
+### 4. Start Command
 
-#### SSE Mode (Default)
+The server starts with:
 ```bash
 npm start
 ```
 
-#### STDIO Mode
+Or directly:
 ```bash
-TRANSPORT_TYPE=stdio npm start
-```
-
-#### Direct Commands
-```bash
-# SSE mode (default)
 node dist/index.js
-
-# STDIO mode
-TRANSPORT_TYPE=stdio node dist/index.js
 ```
-
-## Transport Mode Configuration
-
-### SSE Mode (Default)
-No additional configuration needed - just run:
-```bash
-npm start
-```
-
-### STDIO Mode
-To use STDIO mode instead:
-1. **Set Transport Environment Variable:**
-   ```
-   TRANSPORT_TYPE=stdio
-   ```
-
-2. **Start the server:**
-   ```bash
-   npm start
-   ```
-
-### SSE Benefits
-- Network accessible (not just local)
-- Supports multiple concurrent clients
-- Better debugging with HTTP tools
-- Session management included
 
 ## Verification
 
 After installation, verify the MCP is running by checking:
-
-### For SSE Mode (Default):
-1. Server status shows "Running" 
-2. Logs show "Server started with SSE transport on port 3000"
-3. Logs show "MongoDB connected successfully"
-4. HTTP endpoint responds: `curl http://localhost:3000/mcp`
-
-### For STDIO Mode:
 1. Server status in Supermachine dashboard shows "Running"
-2. Logs show "Server started with stdio transport"
-3. Logs show "MongoDB connected successfully"
+2. Logs show "MongoDB connected successfully"
+3. Logs show "Server started successfully"
 
 ## Available Tools
 
