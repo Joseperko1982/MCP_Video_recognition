@@ -10,6 +10,8 @@
     "dev": "tsc -w & node --watch dist/index.js",
     "clean": "rm -rf dist",
     "prebuild": "npm run clean",
+    "postinstall": "npm run build",
+    "verify": "node verify-build.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -39,12 +41,11 @@
     "mongodb": "^6.3.0",
     "axios": "^1.6.2",
     "dotenv": "^16.3.1",
-    "mime-types": "^2.1.35"
-  },
-  "devDependencies": {
+    "mime-types": "^2.1.35",
+    "typescript": "^5.8.3",
     "@types/express": "^5.0.1",
     "@types/node": "^22.14.1",
-    "typescript": "^5.8.3",
     "@types/mime-types": "^2.1.4"
-  }
+  },
+  "devDependencies": {}
 }

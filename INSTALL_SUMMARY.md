@@ -1,9 +1,5 @@
 # MCP Video Recognition - Installation Summary
 
-## Transport Support
-✅ **SSE Transport** (Default - Server-Sent Events over HTTP)  
-✅ **STDIO Transport** (Alternative mode)
-
 ## For Supermachine Installation
 
 ### Repository URL
@@ -13,20 +9,19 @@ https://github.com/yourusername/mcp_video_recognition
 
 ### Build Commands
 ```bash
-npm install
-npm run build
+npm install   # This automatically runs the build via postinstall
 ```
 
-### Start Commands
+**Note**: The build runs automatically after `npm install` completes!
 
-#### SSE Mode (Default)
+To verify the build:
+```bash
+npm run verify
+```
+
+### Start Command
 ```bash
 npm start
-```
-
-#### STDIO Mode
-```bash
-TRANSPORT_TYPE=stdio npm start
 ```
 
 ### Required Environment Variables
@@ -36,18 +31,13 @@ TRANSPORT_TYPE=stdio npm start
 | `GOOGLE_API_KEY` | Google Gemini API key | `AIzaSy...` |
 | `MONGODB_URI` | MongoDB connection string | `mongodb+srv://user:pass@cluster.mongodb.net/` |
 
-### Transport Configuration
-
-| Variable | Default | Description | Options |
-|----------|---------|-------------|---------|
-| `TRANSPORT_TYPE` | `sse` | Transport mode | `stdio` or `sse` |
-| `PORT` | `3000` | Port for SSE mode | Any available port |
-
 ### Optional Environment Variables
 
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `MONGODB_DB_NAME` | `video_analysis` | Database name |
+| `TRANSPORT_TYPE` | `stdio` | Transport mode (`stdio` or `sse`) |
+| `PORT` | `3000` | Port for SSE transport |
 | `LOG_LEVEL` | `info` | Logging level |
 
 ### Features
@@ -76,7 +66,7 @@ TRANSPORT_TYPE=stdio npm start
 ```
 
 ### Support Documentation
-- [SSE_CONFIGURATION.md](./SSE_CONFIGURATION.md) - Detailed SSE setup guide
 - [DEPLOYMENT.md](./DEPLOYMENT.md) - Full deployment guide
 - [SUPERMACHINE_SETUP.md](./SUPERMACHINE_SETUP.md) - Detailed Supermachine instructions
+- [FIX_SUMMARY.md](./FIX_SUMMARY.md) - Solutions for common deployment issues
 - [README.md](./README.md) - Main documentation

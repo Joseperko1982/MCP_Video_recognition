@@ -35,13 +35,12 @@ In the Supermachine dashboard, add the following environment variables:
 
 ### 3. Build Configuration
 
-The MCP requires the following build steps:
-```bash
-npm install
-npm run build
-```
+The MCP will automatically build during installation:
+- `npm install` triggers the `postinstall` script
+- The `postinstall` script runs `npm run build`
+- This compiles TypeScript to JavaScript in the `dist` folder
 
-Supermachine should automatically run these commands during installation.
+**Note**: The build happens automatically - no manual build step needed!
 
 ### 4. Start Command
 
@@ -72,6 +71,12 @@ Once installed, the following tools are available:
 
 ## Troubleshooting
 
+### "Cannot find module" or "dist/index.js not found"
+- This means the TypeScript build didn't complete
+- Ensure the repository has the latest `package.json` with `postinstall` script
+- Try manually running the build command in Supermachine console if available
+- Verify Node.js 18+ is being used
+
 ### MongoDB Connection Failed
 - Verify your connection string is correct
 - Check if your IP is whitelisted in MongoDB Atlas
@@ -85,6 +90,7 @@ Once installed, the following tools are available:
 - Ensure Node.js 18+ is available
 - Check if all dependencies installed correctly
 - Review build logs for specific errors
+- TypeScript is now in dependencies (not devDependencies) for production builds
 
 ## Support
 
