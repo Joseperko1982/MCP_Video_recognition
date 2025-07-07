@@ -7,7 +7,10 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
+    "start:stdio": "TRANSPORT_TYPE=stdio node dist/index.js",
+    "start:sse": "TRANSPORT_TYPE=sse node dist/index.js",
     "dev": "tsc -w & node --watch dist/index.js",
+    "dev:sse": "tsc -w & TRANSPORT_TYPE=sse PORT=3000 node --watch dist/index.js",
     "debug": "tsc & npx @modelcontextprotocol/inspector node dist/index.js",
     "lint": "eslint src --ext .ts",
     "clean": "rm -rf dist",
@@ -22,7 +25,10 @@
     "image",
     "recognition",
     "mongodb",
-    "url-download"
+    "url-download",
+    "stdio",
+    "sse",
+    "server-sent-events"
   ],
   "author": "Your Name",
   "license": "MIT",
@@ -32,6 +38,16 @@
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "mcp": {
+    "transports": ["stdio", "sse"],
+    "defaultTransport": "stdio",
+    "ssePort": 3000,
+    "tools": [
+      "image_recognition",
+      "video_recognition", 
+      "audio_recognition"
+    ]
   },
   "dependencies": {
     "@google/genai": "^0.9.0",

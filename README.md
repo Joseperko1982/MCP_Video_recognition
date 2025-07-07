@@ -14,6 +14,8 @@ An MCP (Model Context Protocol) server that provides AI-powered media recognitio
 - **URL Support**: Download and analyze media directly from URLs
 - **MongoDB Integration**: Store downloaded media and analysis results
 - **Automatic Caching**: Skip redundant processing with intelligent caching
+- **Dual Transport Support**: Both STDIO and SSE (Server-Sent Events) modes
+- **Network Accessible**: SSE mode enables HTTP-based remote access
 
 ## 📋 Prerequisites
 
@@ -40,8 +42,27 @@ npm run build
 npm start
 ```
 
+## 🌐 Transport Modes
+
+This MCP supports **both** transport modes:
+
+### STDIO Transport (Default)
+```bash
+npm start
+# or
+npm run start:stdio
+```
+
+### SSE Transport (HTTP-based)
+```bash
+npm run start:sse
+# or
+TRANSPORT_TYPE=sse PORT=3000 npm start
+```
+
 ## 📚 Documentation
 
+- [SSE Configuration Guide](./SSE_CONFIGURATION.md) - Detailed SSE setup
 - [Deployment Guide](./DEPLOYMENT.md) - Detailed deployment instructions
 - [Supermachine Setup](./SUPERMACHINE_SETUP.md) - Supermachine-specific installation
 - [MongoDB Examples](./examples/mongodb-examples.md) - Database query examples
