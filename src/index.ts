@@ -23,8 +23,8 @@ function loadConfig(): ServerConfig {
     throw new Error('GOOGLE_API_KEY environment variable is required');
   }
 
-  // Determine transport type
-  const transportType = process.env.TRANSPORT_TYPE === 'sse' ? 'sse' : 'stdio';
+  // Determine transport type (defaults to SSE)
+  const transportType = process.env.TRANSPORT_TYPE === 'stdio' ? 'stdio' : 'sse';
   
   // Parse port if provided
   const portStr = process.env.PORT;

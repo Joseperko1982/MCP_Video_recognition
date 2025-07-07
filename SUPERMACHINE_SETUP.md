@@ -5,8 +5,8 @@ This guide provides step-by-step instructions for installing the MCP Video Recog
 ## Transport Support
 
 This MCP server supports **BOTH** transport modes:
-✅ **STDIO Transport** (Default)  
-✅ **SSE Transport** (Server-Sent Events over HTTP)
+✅ **SSE Transport** (Default - Server-Sent Events over HTTP)  
+✅ **STDIO Transport** (Alternative mode)
 
 ## Prerequisites
 
@@ -40,7 +40,7 @@ In the Supermachine dashboard, add the following environment variables:
 #### Transport Configuration
 | Variable | Description | Default | Options |
 |----------|-------------|---------|---------|
-| `TRANSPORT_TYPE` | Transport mode | `stdio` | `stdio` or `sse` |
+| `TRANSPORT_TYPE` | Transport mode | `sse` | `stdio` or `sse` |
 | `PORT` | Port for SSE mode | `3000` | Any available port |
 
 #### Optional Variables
@@ -61,51 +61,44 @@ Supermachine should automatically run these commands during installation.
 
 ### 4. Start Commands
 
-#### STDIO Mode (Default)
+#### SSE Mode (Default)
 ```bash
 npm start
 ```
-or
-```bash
-npm run start:stdio
-```
 
-#### SSE Mode
+#### STDIO Mode
 ```bash
-npm run start:sse
-```
-or with environment variables:
-```bash
-TRANSPORT_TYPE=sse PORT=3000 npm start
+TRANSPORT_TYPE=stdio npm start
 ```
 
 #### Direct Commands
 ```bash
-# STDIO mode
+# SSE mode (default)
 node dist/index.js
 
-# SSE mode
-TRANSPORT_TYPE=sse PORT=3000 node dist/index.js
+# STDIO mode
+TRANSPORT_TYPE=stdio node dist/index.js
 ```
 
-## SSE Mode Configuration
+## Transport Mode Configuration
 
-### To run in SSE mode on Supermachine:
+### SSE Mode (Default)
+No additional configuration needed - just run:
+```bash
+npm start
+```
 
+### STDIO Mode
+To use STDIO mode instead:
 1. **Set Transport Environment Variable:**
    ```
-   TRANSPORT_TYPE=sse
-   PORT=3000
+   TRANSPORT_TYPE=stdio
    ```
 
-2. **Use SSE Start Command:**
+2. **Start the server:**
    ```bash
-   npm run start:sse
+   npm start
    ```
-
-3. **Verify SSE is Running:**
-   - Check logs for "Server started with SSE transport on port 3000"
-   - HTTP endpoints will be available at the configured port
 
 ### SSE Benefits
 - Network accessible (not just local)
@@ -117,16 +110,16 @@ TRANSPORT_TYPE=sse PORT=3000 node dist/index.js
 
 After installation, verify the MCP is running by checking:
 
-### For STDIO Mode:
-1. Server status in Supermachine dashboard shows "Running"
-2. Logs show "Server started with stdio transport"
-3. Logs show "MongoDB connected successfully"
-
-### For SSE Mode:
+### For SSE Mode (Default):
 1. Server status shows "Running" 
 2. Logs show "Server started with SSE transport on port 3000"
 3. Logs show "MongoDB connected successfully"
 4. HTTP endpoint responds: `curl http://localhost:3000/mcp`
+
+### For STDIO Mode:
+1. Server status in Supermachine dashboard shows "Running"
+2. Logs show "Server started with stdio transport"
+3. Logs show "MongoDB connected successfully"
 
 ## Available Tools
 

@@ -46,23 +46,18 @@ npm start
 
 This MCP supports **both** transport modes:
 
-### STDIO Transport (Default)
+### SSE Transport (Default - HTTP-based)
 ```bash
 npm start
-# or
-npm run start:stdio
 ```
 
-### SSE Transport (HTTP-based)
+### STDIO Transport
 ```bash
-npm run start:sse
-# or
-TRANSPORT_TYPE=sse PORT=3000 npm start
+TRANSPORT_TYPE=stdio npm start
 ```
 
 ## 📚 Documentation
 
-- [SSE Configuration Guide](./SSE_CONFIGURATION.md) - Detailed SSE setup
 - [Deployment Guide](./DEPLOYMENT.md) - Detailed deployment instructions
 - [Supermachine Setup](./SUPERMACHINE_SETUP.md) - Supermachine-specific installation
 - [MongoDB Examples](./examples/mongodb-examples.md) - Database query examples

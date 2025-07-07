@@ -43,7 +43,7 @@ npm start
 | `GOOGLE_API_KEY` | ✅ | Google Gemini API key |
 | `MONGODB_URI` | ✅ | MongoDB connection string |
 | `MONGODB_DB_NAME` | ❌ | Database name (default: `video_analysis`) |
-| `TRANSPORT_TYPE` | ❌ | `stdio` or `sse` (default: `stdio`) |
+| `TRANSPORT_TYPE` | ❌ | `stdio` or `sse` (default: `sse`) |
 | `LOG_LEVEL` | ❌ | Log verbosity (default: `info`) |
 
 ## Deployment Options

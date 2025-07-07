@@ -1,8 +1,8 @@
 # MCP Video Recognition - Installation Summary
 
 ## Transport Support
-✅ **STDIO Transport** (Default)  
-✅ **SSE Transport** (Server-Sent Events over HTTP)
+✅ **SSE Transport** (Default - Server-Sent Events over HTTP)  
+✅ **STDIO Transport** (Alternative mode)
 
 ## For Supermachine Installation
 
@@ -19,18 +19,14 @@ npm run build
 
 ### Start Commands
 
-#### STDIO Mode (Default)
+#### SSE Mode (Default)
 ```bash
 npm start
 ```
 
-#### SSE Mode
+#### STDIO Mode
 ```bash
-npm run start:sse
-```
-or with environment:
-```bash
-TRANSPORT_TYPE=sse PORT=3000 npm start
+TRANSPORT_TYPE=stdio npm start
 ```
 
 ### Required Environment Variables
@@ -44,7 +40,7 @@ TRANSPORT_TYPE=sse PORT=3000 npm start
 
 | Variable | Default | Description | Options |
 |----------|---------|-------------|---------|
-| `TRANSPORT_TYPE` | `stdio` | Transport mode | `stdio` or `sse` |
+| `TRANSPORT_TYPE` | `sse` | Transport mode | `stdio` or `sse` |
 | `PORT` | `3000` | Port for SSE mode | Any available port |
 
 ### Optional Environment Variables
