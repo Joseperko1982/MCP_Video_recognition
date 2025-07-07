@@ -37,25 +37,52 @@ export class MongoDBService {
   }
 
   /**
-   * Connect to MongoDB
+   * Connect to MongoDB with retry logic
    */
   async connect(): Promise<void> {
-    try {
-      log.info('Connecting to MongoDB...');
-      this.client = new MongoClient(this.connectionString);
-      await this.client.connect();
-      
-      this.db = this.client.db(this.dbName);
-      this.mediaCollection = this.db.collection<MediaDocument>('media');
-      
-      // Create indexes for better performance
-      await this.createIndexes();
-      
-      log.info('Successfully connected to MongoDB');
-    } catch (error) {
-      log.error('Failed to connect to MongoDB', error);
-      throw error;
+    const maxRetries = 3;
+    let retries = 0;
+    let lastError: any;
+
+    while (retries < maxRetries) {
+      try {
+        log.info(`Connecting to MongoDB... (attempt ${retries + 1}/${maxRetries})`);
+        
+        // Create client with connection options
+        this.client = new MongoClient(this.connectionString, {
+          serverSelectionTimeoutMS: 10000,
+          connectTimeoutMS: 10000,
+          retryWrites: true
+        });
+        
+        await this.client.connect();
+        
+        // Verify connection
+        await this.client.db('admin').command({ ping: 1 });
+        
+        this.db = this.client.db(this.dbName);
+        this.mediaCollection = this.db.collection<MediaDocument>('media');
+        
+        // Create indexes for better performance
+        await this.createIndexes();
+        
+        log.info('Successfully connected to MongoDB');
+        return; // Success, exit the retry loop
+      } catch (error) {
+        lastError = error;
+        retries++;
+        log.error(`MongoDB connection attempt ${retries} failed:`, error);
+        
+        if (retries < maxRetries) {
+          const waitTime = Math.min(1000 * Math.pow(2, retries), 10000);
+          log.info(`Retrying in ${waitTime}ms...`);
+          await new Promise(resolve => setTimeout(resolve, waitTime));
+        }
+      }
     }
+    
+    log.error('Failed to connect to MongoDB after all retries', lastError);
+    throw new Error(`MongoDB connection failed after ${maxRetries} attempts: ${lastError?.message || 'Unknown error'}`);
   }
 
   /**

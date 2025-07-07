@@ -60,6 +60,8 @@ TRANSPORT_TYPE=stdio npm start
 
 - [Deployment Guide](./DEPLOYMENT.md) - Detailed deployment instructions
 - [Supermachine Setup](./SUPERMACHINE_SETUP.md) - Supermachine-specific installation
+- [Supermachine Checklist](./SUPERMACHINE_CHECKLIST.md) - Quick deployment checklist
+- [Troubleshooting](./SUPERMACHINE_TROUBLESHOOTING.md) - Common issues and fixes
 - [MongoDB Examples](./examples/mongodb-examples.md) - Database query examples
 
 ## 🔧 Configuration

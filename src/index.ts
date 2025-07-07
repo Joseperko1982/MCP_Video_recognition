@@ -17,23 +17,44 @@ Logger.setLogLevel(logLevel as LogLevel);
  * Load configuration from environment variables
  */
 function loadConfig(): ServerConfig {
+  // Log environment for debugging (without sensitive data)
+  log.info('Environment check:', {
+    NODE_ENV: process.env.NODE_ENV || 'not set',
+    TRANSPORT_TYPE: process.env.TRANSPORT_TYPE || 'not set',
+    PORT: process.env.PORT || 'not set',
+    MONGODB_DB_NAME: process.env.MONGODB_DB_NAME || 'default',
+    GOOGLE_API_KEY: process.env.GOOGLE_API_KEY ? '[SET]' : '[NOT SET]',
+    MONGODB_URI: process.env.MONGODB_URI ? '[SET]' : '[NOT SET]'
+  });
+
   // Check for required environment variables
   const apiKey = process.env.GOOGLE_API_KEY;
   if (!apiKey) {
+    log.error('GOOGLE_API_KEY environment variable is missing');
+    log.error('Please set it in Supermachine dashboard or .env file');
     throw new Error('GOOGLE_API_KEY environment variable is required');
   }
 
   // Determine transport type
   const transportType = process.env.TRANSPORT_TYPE === 'sse' ? 'sse' : 'stdio';
   
-  // Parse port if provided
+  // Parse port if provided (important for cloud deployments)
   const portStr = process.env.PORT;
-  const port = portStr ? parseInt(portStr, 10) : undefined;
+  const port = portStr ? parseInt(portStr, 10) : 3000;
   
   // MongoDB configuration
   const mongoUri = process.env.MONGODB_URI;
   if (!mongoUri) {
+    log.error('MONGODB_URI environment variable is missing');
+    log.error('Please set it in Supermachine dashboard or .env file');
+    log.error('Format: mongodb+srv://username:password@cluster.mongodb.net/');
     throw new Error('MONGODB_URI environment variable is required');
+  }
+  
+  // Validate MongoDB URI format
+  if (!mongoUri.startsWith('mongodb://') && !mongoUri.startsWith('mongodb+srv://')) {
+    log.error('Invalid MONGODB_URI format. Must start with mongodb:// or mongodb+srv://');
+    throw new Error('Invalid MONGODB_URI format');
   }
   
   return {
