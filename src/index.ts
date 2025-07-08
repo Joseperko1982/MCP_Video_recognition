@@ -30,9 +30,11 @@ function loadConfig(): ServerConfig {
   // Check for required environment variables
   const apiKey = process.env.GOOGLE_API_KEY;
   if (!apiKey) {
-    log.error('GOOGLE_API_KEY environment variable is missing');
-    log.error('Please set it in Supermachine dashboard or .env file');
-    throw new Error('GOOGLE_API_KEY environment variable is required');
+    console.error('❌ GOOGLE_API_KEY environment variable is missing');
+    console.error('Please set it in your .env file or environment');
+    console.error('Run: cp .env.example .env');
+    console.error('Then edit .env with your credentials');
+    process.exit(1);
   }
 
   // Determine transport type
@@ -45,10 +47,12 @@ function loadConfig(): ServerConfig {
   // MongoDB configuration
   const mongoUri = process.env.MONGODB_URI;
   if (!mongoUri) {
-    log.error('MONGODB_URI environment variable is missing');
-    log.error('Please set it in Supermachine dashboard or .env file');
-    log.error('Format: mongodb+srv://username:password@cluster.mongodb.net/');
-    throw new Error('MONGODB_URI environment variable is required');
+    console.error('❌ MONGODB_URI environment variable is missing');
+    console.error('Please set it in your .env file or environment');
+    console.error('Format: mongodb+srv://username:password@cluster.mongodb.net/');
+    console.error('Run: cp .env.example .env');
+    console.error('Then edit .env with your credentials');
+    process.exit(1);
   }
   
   // Validate MongoDB URI format
